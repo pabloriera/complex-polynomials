@@ -142,16 +142,16 @@ void main( void ) {
   
   vec2 z = vec2(position.x,position.y);
   
-  float t = iTime*2.0 + sin(iTime*0.5)*10.0;
+  float t = iTime*2.0 + sin(iTime*0.01)*10.0;
   
-  vec2 z0 = vec2(cos(t*0.1),sin(t*0.1))*0.01 + vec2(cos(t*0.2),sin(t*0.2))*0.07;
-  vec2 z1 = vec2(cos(t*0.3),sin(t*0.3))*0.03 + vec2(cos(t*0.4),sin(t*0.4))*0.03;
-  vec2 z2 = vec2(cos(t*0.5),sin(t*0.5))*0.05 + vec2(cos(t*0.6),sin(t*0.6))*0.05;
-  vec2 z3 = vec2(cos(t*0.7),sin(t*0.7))*0.07 + vec2(cos(t*0.8),sin(t*0.8))*0.01;
-  vec2 z4 = vec2(cos(t*0.15),sin(t*0.15))*0.015 + vec2(cos(t*0.25),sin(t*0.25))*0.075;
-  vec2 z5 = vec2(cos(t*0.35),sin(t*0.35))*0.035 + vec2(cos(t*0.45),sin(t*0.45))*0.035;
-  vec2 z6 = vec2(cos(t*0.55),sin(t*0.55))*0.055 + vec2(cos(t*0.65),sin(t*0.65))*0.055;
-  vec2 z7 = vec2(cos(t*0.75),sin(t*0.75))*0.075 + vec2(cos(t*0.85),sin(t*0.85))*0.015;
+  vec2 z0 = vec2(cos(t*0.1243),sin(t*0.1243))*0.01 + vec2(cos(t*0.2324),sin(t*0.2324))*0.07;
+  vec2 z1 = vec2(cos(t*0.3159),sin(t*0.3159))*0.03 + vec2(cos(t*0.4456),sin(t*0.4456))*0.03;
+  vec2 z2 = vec2(cos(t*0.5768),sin(t*0.5768))*0.05 + vec2(cos(t*0.6687),sin(t*0.6687))*0.05;
+  vec2 z3 = vec2(cos(t*0.7528),sin(t*0.7528))*0.07 + vec2(cos(t*0.8489),sin(t*0.8498))*0.01;
+  vec2 z4 = vec2(cos(t*0.15156),sin(t*0.15156))*0.015 + vec2(cos(t*0.25147),sin(t*0.25147))*0.075;
+  vec2 z5 = vec2(cos(t*0.35468),sin(t*0.35468))*0.035 + vec2(cos(t*0.45456),sin(t*0.45456))*0.035;
+  vec2 z6 = vec2(cos(t*0.55132),sin(t*0.55132))*0.055 + vec2(cos(t*0.65258),sin(t*0.65258))*0.055;
+  vec2 z7 = vec2(cos(t*0.75257),sin(t*0.75257))*0.075 + vec2(cos(t*0.85789),sin(t*0.85789))*0.015;
   
   vec2 w = cx_div(cx_mul(cx_mul(cx_mul((z-z0),(z-z1)),(z-z2)),(z-z3)  ), cx_mul(cx_mul(cx_mul((z-z4),(z-z5)),(z-z6)),(z-z7)  ));
   
