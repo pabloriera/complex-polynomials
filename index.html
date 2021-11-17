@@ -100,9 +100,8 @@ this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,th
 //# sourceMappingURL=../dist/shader-web-background.min.js.map
   </script>
   <script type="x-shader/x-fragment" id="image">
+    precision mediump float;
 #extension GL_OES_standard_derivatives : enable
-
-precision mediump float;
 
 
 #define cx_mul(a, b) vec2(a.x*b.x-a.y*b.y, a.x*b.y+a.y*b.x)
@@ -215,14 +214,18 @@ vec2 cx_pow(vec2 a, float n) {
 }
 precision highp float;
 
-uniform float iTime;
-uniform vec2 mouse;
-uniform vec2 resolution;
+ uniform float iTime;
+ uniform vec2  iResolution;
+ uniform float iMinDimension;
+ uniform vec2  iMouse;
 
 void main( void ) {
 
-  vec2 position = ( gl_FragCoord.xy / resolution.x ) - vec2(0.5,0.25);
-  vec2 m = mouse.xy/vec2(1.0,resolution.x/resolution.y)  - vec2(0.5,0.25);
+  //vec2 position = ( gl_FragCoord.xy / resolution.x ) - vec2(0.5,0.25);
+  vec2 position = (gl_FragCoord.xy * 2. - iResolution) / iMinDimension;
+
+  //vec2 m = mouse.xy/vec2(1.0,resolution.x/resolution.y)  - vec2(0.5,0.25);
+  vec2 m = (iMouse * 2. - iResolution) / iMinDimension;
 
   float color = 0.0;
   
@@ -250,12 +253,54 @@ void main( void ) {
 
 }
   </script>
-  <script>
+ <script>
+    var minDimension;
+    var time;
+
+    // mouse coordinates taken from from the mousemove event
+    var mouseX;
+    var mouseY;
+    document.addEventListener("mousemove", (event) => {
+       mouseX = event.clientX;
+       mouseY = event.clientY;
+    });
+
+    // mouse coordinates relative to the shader, see below
+    var shaderMouseX;
+    var shaderMouseY;
+
     shaderWebBackground.shade({
+      onResize: (width, height) => {
+        minDimension = Math.min(width, height);
+      },
+      onInit: (ctx) => {
+
+        // initially let's put mouse it in the center of the screen
+        // as long as the shader covers the whole screen it will work
+        mouseX = ctx.cssWidth / 2.;
+        mouseY = ctx.cssHeight / 2.;
+      },
+      onBeforeFrame: (ctx) => {
+        time = performance.now() / 1000;
+
+        // Note: shader (0, 0) pixel coordinates are actually (.5, .5)
+        // and they are located at the bottom-left corner of the canvas.
+        // Also the actual pixel-perfect resolution might differ from so
+        // called CSS pixels depending on the device or zoom level. See:
+        //
+        // https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
+        //
+        // therefore we need to translate to shader coordinates through the context
+        shaderMouseX = ctx.toShaderX(mouseX);
+        shaderMouseY = ctx.toShaderY(mouseY);
+      },
       shaders: {
         image: {
           uniforms: {
-            iiTime: (gl, loc) => gl.uniform1f(loc, performance.now() / 1000)
+            iResolution:   (gl, loc, ctx) => gl.uniform2f(loc, ctx.width, ctx.height),
+            iTime:         (gl, loc) => gl.uniform1f(loc, time),
+            iMinDimension: (gl, loc) => gl.uniform1f(loc, minDimension),
+            iMouse:        (gl, loc) => gl.uniform2f(loc, shaderMouseX, shaderMouseY)
           }
         }
       }
