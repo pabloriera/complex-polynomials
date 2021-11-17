@@ -236,7 +236,7 @@ void main( void ) {
             iTime:         (gl, loc) => gl.uniform1f(loc, time),
             iMinDimension: (gl, loc) => gl.uniform1f(loc, minDimension),
             iMouse:        (gl, loc) => gl.uniform2f(loc, shaderMouseX, shaderMouseY),
-            iMode:         (gl, loc) => gl.uniform1f(loc, mode)
+            iMode:         (gl, loc) => gl.uniform1i(loc, mode)
           }
         }
       }
