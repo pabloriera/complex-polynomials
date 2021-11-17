@@ -177,90 +177,151 @@ this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,th
   <script type="x-shader/x-fragment" id="feedback">
     precision highp float;
 
-    uniform vec2      iResolution;
-    uniform float     iMinDimension;
-    uniform sampler2D iChannel0;
-    uniform vec2      iScreenRatioHalf;
-    uniform vec2      iFeedbackZoomCenter;
-    uniform float     iFeedbackZoomRate;
-    uniform vec2      iFeedbackShiftVector;
-    uniform float     iFeedbackFadeRate;
-    uniform float     iFeedbackColorShiftZoom;
-    uniform float     iFeedbackColorShiftImpact;
-    uniform vec2      iDrawCenter;
-    uniform float     iDrawIntensity;
-    uniform float     iBlobEdgeSmoothing;
-    uniform float     iBlob1Radius;
-    uniform float     iBlob1PowFactor;
-    uniform vec3      iBlob1Color;
-    uniform float     iBlob2Radius;
-    uniform float     iBlob2PowFactor;
-    uniform vec3      iBlob2Color;
-    uniform float     iColorShiftOfRadius;
+#extension GL_OES_standard_derivatives : enable
 
-    /*
-      Normally it would be provided by texture parameters, but on iOS the texture REPEAT works only
-      for textures which size is the power of 2.
-     */
-    vec4 repeatedTexture(in sampler2D channel, in vec2 uv) {
-      return texture2D(channel, mod(uv, 1.));
-    }
 
-    float drawBlob(
-      in vec2 st,
-      in vec2 center,
-      in float radius,
-      in float edgeSmoothing
-    ) {
-      float dist = length((st - center) / radius);
-      return dist * smoothstep(1., 1. - iBlobEdgeSmoothing, dist);
-    }
+#define cx_mul(a, b) vec2(a.x*b.x-a.y*b.y, a.x*b.y+a.y*b.x)
+//#define cx_div(a, b) vec2(((a.x*b.x+a.y*b.y)/(b.x*b.x+b.y*b.y)),((a.y*b.x-a.x*b.y)/(b.x*b.x+b.y*b.y)))
+#define cx_modulus(a) length(a)
+#define cx_conj(a) vec2(a.x, -a.y)
+#define cx_arg(a) atan(a.y, a.x)
+#define cx_sin(a) vec2(sin(a.x) * cosh(a.y), cos(a.x) * sinh(a.y))
+#define cx_cos(a) vec2(cos(a.x) * cosh(a.y), -sin(a.x) * sinh(a.y))
+#define PI 3.1415926538
 
-    void main() {
-      vec2 uv = gl_FragCoord.xy / iResolution;
-      vec2 st = (gl_FragCoord.xy * 2. - iResolution) / iMinDimension;
 
-      float drawDist = length(st - iDrawCenter);
+// Hyperboloc functions by toneburst from 
+// https://machinesdontcare.wordpress.com/2008/03/10/glsl-cosh-sinh-tanh/
+// These are missing in GLSL 1.10 and 1.20, uncomment if you need them 
 
-      vec3 colorShift = repeatedTexture(
-        iChannel0,
-        uv - st * iFeedbackColorShiftZoom * iScreenRatioHalf
-      ).rgb;
+vec2 cx_div(vec2 a, vec2 b){
+    return vec2(((a.x*b.x+a.y*b.y)/(b.x*b.x+b.y*b.y)),((a.y*b.x-a.x*b.y)/(b.x*b.x+b.y*b.y)));
+   }
 
-      vec2 stShift = vec2(0);
-      stShift += iFeedbackZoomRate * (st - iFeedbackZoomCenter);
-      stShift += (colorShift.rg - .5) * iFeedbackColorShiftImpact;
-      stShift += iFeedbackShiftVector;
-      stShift *= iScreenRatioHalf;
+/// COSH Function (Hyperbolic Cosine)
+float cosh(float val)
+{
+    float tmp = exp(val);
+    float cosH = (tmp + 1.0 / tmp) / 2.0;
+    return cosH;
+}
+ 
+// TANH Function (Hyperbolic Tangent)
+float tanh(float val)
+{
+    float tmp = exp(val);
+    float tanH = (tmp - 1.0 / tmp) / (tmp + 1.0 / tmp);
+    return tanH;
+}
+ 
+// SINH Function (Hyperbolic Sine)
+float sinh(float val)
+{
+    float tmp = exp(val);
+    float sinH = (tmp - 1.0 / tmp) / 2.0;
+    return sinH;
+}   
 
-      vec3 prevColor = repeatedTexture(iChannel0, uv - stShift).rgb;
-      prevColor *= iFeedbackFadeRate;
 
-      vec3 drawColor = vec3(0);
+// Complex Number math by julesb
+// https://github.com/julesb/glsl-util
+// Additions by Johan Karlsson (DonKarlssonSan)
 
-      float radius =
-        1.
-        + (colorShift.r + colorShift.g + colorShift.b) * iColorShiftOfRadius;
-      drawColor +=
-        pow(
-          drawBlob(st, iDrawCenter, radius * iBlob1Radius, iBlobEdgeSmoothing),
-          iBlob1PowFactor
-        ) * iBlob1Color;
-      drawColor +=
-        pow(
-          drawBlob(st, iDrawCenter, radius * iBlob2Radius, iBlobEdgeSmoothing),
-          iBlob2PowFactor
-        ) * iBlob2Color;
 
-      vec3 color = vec3(0);
-      drawColor *= iDrawIntensity;
-      prevColor *= iFeedbackFadeRate;
-      color += prevColor;
-      color += drawColor;
 
-      color = clamp(color, 0., 1.);
-      gl_FragColor = vec4(color, 1.);
-    }
+vec2 cx_sqrt(vec2 a) {
+    float r = length(a);
+    float rpart = sqrt(0.5*(r+a.x));
+    float ipart = sqrt(0.5*(r-a.x));
+    if (a.y < 0.0) ipart = -ipart;
+    return vec2(rpart,ipart);
+}
+
+vec2 cx_tan(vec2 a) {return cx_div(cx_sin(a), cx_cos(a)); }
+
+vec2 cx_log(vec2 a) {
+    float rpart = sqrt((a.x*a.x)+(a.y*a.y));
+    float ipart = atan(a.y,a.x);
+    if (ipart > PI) ipart=ipart-(2.0*PI);
+    return vec2(log(rpart),ipart);
+}
+
+vec2 cx_mobius(vec2 a) {
+    vec2 c1 = a - vec2(1.0,0.0);
+    vec2 c2 = a + vec2(1.0,0.0);
+    return cx_div(c1, c2);
+}
+
+vec2 cx_z_plus_one_over_z(vec2 a) {
+    return a + cx_div(vec2(1.0,0.0), a);
+}
+
+vec2 cx_z_squared_plus_c(vec2 z, vec2 c) {
+    return cx_mul(z, z) + c;
+}
+
+vec2 cx_sin_of_one_over_z(vec2 z) {
+    return cx_sin(cx_div(vec2(1.0,0.0), z));
+}
+
+////////////////////////////////////////////////////////////
+// end Complex Number math by julesb
+////////////////////////////////////////////////////////////
+
+// My own additions to complex number math
+#define cx_sub(a, b) vec2(a.x - b.x, a.y - b.y)
+#define cx_add(a, b) vec2(a.x + b.x, a.y + b.y)
+#define cx_abs(a) length(a)
+vec2 cx_to_polar(vec2 a) {
+    float phi = atan(a.y / a.x);
+    float r = length(a);
+    return vec2(r, phi); 
+}
+    
+// Complex power
+// Let z = r(cos θ + i sin θ)
+// Then z^n = r^n (cos nθ + i sin nθ)
+vec2 cx_pow(vec2 a, float n) {
+    float angle = atan(a.y, a.x);
+    float r = length(a);
+    float real = pow(r, n) * cos(n*angle);
+    float im = pow(r, n) * sin(n*angle);
+    return vec2(real, im);
+}
+precision highp float;
+
+uniform float time;
+uniform vec2 mouse;
+uniform vec2 resolution;
+
+void main( void ) {
+
+	vec2 position = ( gl_FragCoord.xy / resolution.x ) - vec2(0.5,0.25);
+	vec2 m = mouse.xy/vec2(1.0,resolution.x/resolution.y)  - vec2(0.5,0.25);
+
+	float color = 0.0;
+	
+	vec2 z = vec2(position.x,position.y);
+	
+	vec2 z0 = vec2(cos(time*0.1),sin(time*0.1))*0.01 + vec2(cos(time*0.2),sin(time*0.2))*0.07;
+	vec2 z1 = vec2(cos(time*0.3),sin(time*0.3))*0.03 + vec2(cos(time*0.4),sin(time*0.4))*0.03;
+	vec2 z2 = vec2(cos(time*0.5),sin(time*0.5))*0.05 + vec2(cos(time*0.6),sin(time*0.6))*0.05;
+	vec2 z3 = vec2(cos(time*0.7),sin(time*0.7))*0.07 + vec2(cos(time*0.8),sin(time*0.8))*0.01;
+	vec2 z4 = vec2(cos(time*0.15),sin(time*0.15))*0.015 + vec2(cos(time*0.25),sin(time*0.25))*0.075;
+	vec2 z5 = vec2(cos(time*0.35),sin(time*0.35))*0.035 + vec2(cos(time*0.45),sin(time*0.45))*0.035;
+	vec2 z6 = vec2(cos(time*0.55),sin(time*0.55))*0.055 + vec2(cos(time*0.65),sin(time*0.65))*0.055;
+	vec2 z7 = vec2(cos(time*0.75),sin(time*0.75))*0.075 + vec2(cos(time*0.85),sin(time*0.85))*0.015;
+	
+	vec2 w = cx_div(cx_mul(cx_mul(cx_mul((z-z0),(z-z1)),(z-z2)),(z-z3)  ), cx_mul(cx_mul(cx_mul((z-z4),(z-z5)),(z-z6)),(z-z7)  ));
+//	vec2 w = z-z0;
+	
+	vec2 rot = vec2(cos(time),sin(time))*0.0+1.0;
+	color = (cx_arg(cx_mul(w,rot))+PI)/2.0/PI;
+	//color *= clamp( cx_abs(w)*0.1, 0.0, 1.0);
+	
+	gl_FragColor = vec4(  color, color, color,  1.0 );
+
+}
   </script>
 
   <!--
