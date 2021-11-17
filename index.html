@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Minimal shader with embedded library</title>
+  <title>Complex Polynomials</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   
@@ -154,7 +154,6 @@ void main( void ) {
   vec2 z7 = vec2(cos(t*0.75),sin(t*0.75))*0.075 + vec2(cos(t*0.85),sin(t*0.85))*0.015;
   
   vec2 w = cx_div(cx_mul(cx_mul(cx_mul((z-z0),(z-z1)),(z-z2)),(z-z3)  ), cx_mul(cx_mul(cx_mul((z-z4),(z-z5)),(z-z6)),(z-z7)  ));
-//  vec2 w = z-z0;
   
   vec2 rot = vec2(cos(iTime),sin(iTime))*0.0+1.0;
   color = (cx_arg(cx_mul(w,rot))+PI)/2.0/PI;
