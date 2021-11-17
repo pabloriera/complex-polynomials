@@ -130,11 +130,13 @@ vec2 cx_pow(vec2 a, float n) {
 
 void main( void ) {
 
+  float scale = 3.0;
+
   //vec2 position = ( gl_FragCoord.xy / resolution.x ) - vec2(0.5,0.25);
-  vec2 position = (gl_FragCoord.xy * 2. - iResolution) / iMinDimension;
+  vec2 position = (gl_FragCoord.xy * 2. - iResolution) / iMinDimension*scale;
 
   //vec2 m = mouse.xy/vec2(1.0,resolution.x/resolution.y)  - vec2(0.5,0.25);
-  vec2 m = (iMouse * 2. - iResolution) / iMinDimension;
+  vec2 m = (iMouse * 2. - iResolution) / iMinDimension*scale;
 
   float color = 0.0;
   
