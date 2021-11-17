@@ -100,8 +100,9 @@ this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,th
 //# sourceMappingURL=../dist/shader-web-background.min.js.map
   </script>
   <script type="x-shader/x-fragment" id="image">
-    precision mediump float;
 #extension GL_OES_standard_derivatives : enable
+
+precision mediump float;
 
 
 #define cx_mul(a, b) vec2(a.x*b.x-a.y*b.y, a.x*b.y+a.y*b.x)
