@@ -174,7 +174,13 @@ void main( void ) {
      color = hsv2rgb(vec3(angle,magn,1.0-magn));
   else if (iMode==2)
      color = hsv2rgb(vec3(angle,0.6,1.0));
-
+	else if (iMode==3)
+	{
+	   float cx = magn*0.08/abs(0.0-w.x);
+	   float cy = magn*0.08/abs(0.0-w.y);
+	   color = hsv2rgb(vec3(angle,1.0,cx)) + hsv2rgb(vec3(angle,1.0,cy));
+	}
+		
   gl_FragColor = vec4( color,  1.0 );
 }
   </script>
