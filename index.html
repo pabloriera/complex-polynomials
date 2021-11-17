@@ -146,8 +146,6 @@ void main( void ) {
 
   //vec2 m = mouse.xy/vec2(1.0,resolution.x/resolution.y)  - vec2(0.5,0.25);
   vec2 m = (iMouse * 2. - iResolution) / iMinDimension*scale;
-
-  float color = 0.0;
   
   vec2 z = vec2(position.x,position.y);
   
@@ -164,20 +162,20 @@ void main( void ) {
   
   vec2 w = cx_div(cx_mul(cx_mul(cx_mul((z-z0),(z-z1)),(z-z2)),(z-z3)  ), cx_mul(cx_mul(cx_mul((z-z4),(z-z5)),(z-z6)),(z-z7)  ));
   
-  vec2 rot = vec2(cos(time),sin(time))*0.0+1.0;
-	float angle = (cx_arg(cx_mul(w,rot))+PI)/2.0/PI;
-	float magn = smoothstep(  0.0, 1.0 , cx_abs(w));
-	
-	vec3 color = vec3(0.0);
-	
-	if (iMode==0)
-	   color = vec3(angle, angle, angle);
-	else if (iMode==1)
-	   color = hsv2rgb(vec3(angle,magn,1.0-magn));
-	else if (iMode==2)
-	   color = hsv2rgb(vec3(angle,0.6,1.0));
-	
-	gl_FragColor = vec4( color,  1.0 );
+  vec2 rot = vec2(cos(iTime),sin(iTime))*0.0+1.0;
+  float angle = (cx_arg(cx_mul(w,rot))+PI)/2.0/PI;
+  float magn = smoothstep(  0.0, 1.0 , cx_abs(w));
+
+  vec3 color = vec3(0.0);
+
+  if (iMode==0)
+     color = vec3(angle, angle, angle);
+  else if (iMode==1)
+     color = hsv2rgb(vec3(angle,magn,1.0-magn));
+  else if (iMode==2)
+     color = hsv2rgb(vec3(angle,0.6,1.0));
+
+  gl_FragColor = vec4( color,  1.0 );
 }
   </script>
  <script>
